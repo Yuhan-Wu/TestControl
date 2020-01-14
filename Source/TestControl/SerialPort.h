@@ -156,4 +156,3 @@ private:
     /** 保存串口消息 */
     static TQueue <char> message_cache;
 };
-
