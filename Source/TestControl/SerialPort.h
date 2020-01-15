@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Containers/Queue.h"
 #include "Windows/MinWindows.h"
+#include <queue>
 
 /** 串口通信类
 *
@@ -98,7 +98,7 @@ public:
     */
     bool ReadChar(char& cRecved);
 
-    /** Get the front char from the que
+    /** Peek the front char from the queue
     *
     *
     * @param: char & cReturn store the front char
@@ -107,6 +107,26 @@ public:
     * @see:
     */
     bool ReturnNextCharFromQueue(char& cReturn);
+
+	/** Remove the front char from the queue
+	*
+	*
+	* @param: void
+	* @return: bool whether there are more inputs
+	* @note:
+	* @see:
+	*/
+	bool RemoveNextCharFromQueue();
+
+	/** Get the size of message queue
+	*
+	*
+	* @param: void
+	* @return: int the size of messageQueue
+	* @note:
+	* @see:
+	*/
+	int SizeOfMessageQueue();
 
 private:
 
@@ -154,5 +174,5 @@ private:
     CRITICAL_SECTION m_csCommunicationSync; //!< 互斥操作串口
 
     /** 保存串口消息 */
-    static TQueue <char> message_cache;
+    static std::queue <char> message_cache;
 };

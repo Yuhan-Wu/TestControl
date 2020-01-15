@@ -10,7 +10,7 @@ bool SerialPort::s_bExit = false;
 /** 当串口无数据时,sleep至下次查询间隔的时间,单位:秒 */
 const UINT SLEEP_TIME_INTERVAL = 5;
 /** 声明消息队列 */
-TQueue<char> SerialPort::message_cache;
+std::queue<char> SerialPort::message_cache;
 
 SerialPort::SerialPort() : m_hListenThread(INVALID_HANDLE_VALUE)
 {
@@ -252,7 +252,9 @@ UINT WINAPI SerialPort::ListenThread(void* pParam)
             rxByteArray = 0x00;
             if (pSerialPort->ReadChar(rxByteArray) == true)
             {
-                message_cache.Enqueue(rxByteArray);
+				if (rxByteArray != '\n' && rxByteArray != '\r' && rxByteArray != ' ' && rxByteArray != '	') {
+					message_cache.push(rxByteArray);
+				}
             }
         } while (--BytesInQue);
     }
@@ -293,11 +295,23 @@ bool SerialPort::ReadChar(char& cRecved)
 }
 
 bool SerialPort::ReturnNextCharFromQueue(char& cReturn) {
-    if (!message_cache.IsEmpty()) {
-        message_cache.Dequeue(cReturn);
+    if (!message_cache.empty()) {
+		cReturn = message_cache.front();
         return true;
     }
     return false;
+}
+
+bool SerialPort::RemoveNextCharFromQueue() {
+	if (!message_cache.empty()) {
+		message_cache.pop();
+		return true;
+	}
+	return false;
+}
+
+int SerialPort::SizeOfMessageQueue() {
+	return message_cache.size();
 }
 
 bool SerialPort::WriteData(char* pData, unsigned int length)

@@ -33,7 +33,7 @@ void UArduinoInput::PortOpen() {
 	if (!mySerialPort.InitPort(port, 9600, 'N', 8, 1, EV_RXCHAR))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("initPort fail !"));
-		// PortOpen();
+		PortOpen();
 	}
 	else
 	{
@@ -56,12 +56,44 @@ void UArduinoInput::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 void UArduinoInput::AnalyzeInput() {
 	char temp;
 	FString instruction = "";
-	while (mySerialPort.ReturnNextCharFromQueue(temp)) {
-		instruction += temp;
-		mySerialPort.ReturnNextCharFromQueue(temp);
-		instruction += temp;
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *instruction);
-		input_queue.Enqueue(instruction);
+	if (mySerialPort.ReturnNextCharFromQueue(temp)) {
+		if (temp == 'L') {
+			if (mySerialPort.SizeOfMessageQueue() > 1) {
+				mySerialPort.RemoveNextCharFromQueue();
+				mySerialPort.ReturnNextCharFromQueue(temp);
+				if (temp == 'R') {
+					mySerialPort.RemoveNextCharFromQueue();
+					instruction = "W";
+				}
+				else if (temp == 'J') {
+					mySerialPort.RemoveNextCharFromQueue();
+					instruction = "J";
+				}
+			}
+		}else if (temp == 'R') {
+			if (mySerialPort.SizeOfMessageQueue() > 1) {
+				mySerialPort.RemoveNextCharFromQueue();
+				mySerialPort.ReturnNextCharFromQueue(temp);
+				if (temp == 'L') {
+					mySerialPort.RemoveNextCharFromQueue();
+					instruction = "W";
+				}else if (temp == 'J') {
+					mySerialPort.RemoveNextCharFromQueue();
+					instruction = "J";
+				}
+			}
+		}
+		else if (temp == 'J') {
+			mySerialPort.RemoveNextCharFromQueue();
+			instruction = "J";
+		}
+		else {
+			mySerialPort.RemoveNextCharFromQueue();
+		}
+		if (instruction != "") {
+			UE_LOG(LogTemp, Warning, TEXT("%s"), *instruction);
+			input_queue.Enqueue(instruction);
+		}
 	}
 }
 
@@ -72,4 +104,3 @@ bool UArduinoInput::ReturnNextInputInQueue(FString& return_value) {
 	}
 	return false;
 }
-

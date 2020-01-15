@@ -70,6 +70,9 @@ protected:
 
 	virtual void Tick(float DeltaTime) override;
 
+	int running_counter = 0;
+	bool isRunning = false;
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

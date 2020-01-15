@@ -12,6 +12,8 @@
 //////////////////////////////////////////////////////////////////////////
 // ATestControlCharacter
 
+#define TOTAL_RUNNING 50
+
 ATestControlCharacter::ATestControlCharacter()
 {
 	// Set size for collision capsule
@@ -83,8 +85,30 @@ void ATestControlCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	FString getInput;
-	if (ArduinoInput->ReturnNextInputInQueue(getInput)) {
-		ACharacter::Jump();
+	if (isRunning) {
+		running_counter++;
+		if (running_counter != TOTAL_RUNNING) {
+			ATestControlCharacter::MoveForward(1);
+		}
+		else {
+			isRunning = false;
+		}
+		// This is for jump+run()
+		// TODO Hopefully, we'll have time to refactor this part :)
+		if (ArduinoInput->ReturnNextInputInQueue(getInput)) {
+			if (getInput == "J") {
+				ACharacter::Jump();
+			}
+		}
+	}
+	else if (ArduinoInput->ReturnNextInputInQueue(getInput)) {
+		if (getInput == "J") {
+			ACharacter::Jump();
+		}
+		else if (getInput == "W") {
+			isRunning = true;
+			running_counter = 0;
+		}
 	}
 }
 
