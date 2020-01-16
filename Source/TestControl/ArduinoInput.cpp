@@ -70,7 +70,8 @@ void UArduinoInput::AnalyzeInput() {
 					instruction = "J";
 				}
 			}
-		}else if (temp == 'R') {
+		}
+		else if (temp == 'R') {
 			if (mySerialPort.SizeOfMessageQueue() > 1) {
 				mySerialPort.RemoveNextCharFromQueue();
 				mySerialPort.ReturnNextCharFromQueue(temp);
@@ -86,6 +87,12 @@ void UArduinoInput::AnalyzeInput() {
 		else if (temp == 'J') {
 			mySerialPort.RemoveNextCharFromQueue();
 			instruction = "J";
+		}
+		else if (temp == 'G') {
+
+		}
+		else if (temp == 'T') {
+			// read twice, next char should be a value
 		}
 		else {
 			mySerialPort.RemoveNextCharFromQueue();

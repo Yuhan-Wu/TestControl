@@ -108,12 +108,49 @@ if (isRunning) {
 	}
 }
 else if (ArduinoInput->ReturnNextInputInQueue(getInput)) {
+	// TODO: change to more graceful code after the rest is done
 	if (getInput == "J") {
-		ACharacter::Jump();
+		if (holdOnToSth) {
+			//climb
+		}
+		else {
+			ACharacter::Jump();
+		}
 	}
 	else if (getInput == "W") {
-		isRunning = true;
-		running_counter = 0;
+		if (holdOnToSth) {
+			// swing
+		}
+		else {
+			isRunning = true;
+			running_counter = 0;
+		}
+	}
+	else if (getInput == "C" || getInput == "O") {
+		int angle = 1;
+		if (getInput == "O") {
+			angle *= -1;
+		}
+		// Read another input
+		while (!ArduinoInput->ReturnNextInputInQueue(getInput));
+		int toInt = FCString::Atoi(*getInput);
+		switch (toInt) {
+		case 1:
+			angle *= 45;
+			break;
+		case 2:
+			angle *= 90;
+			break;
+		case 3:
+			angle *= 135;
+			break;
+		default: 
+		}
+		
+	}
+	else if (getInput == "G") {
+		// Grab sth
+
 	}
 }
 }
