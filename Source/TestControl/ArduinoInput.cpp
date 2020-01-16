@@ -33,7 +33,7 @@ void UArduinoInput::PortOpen() {
 	if (!mySerialPort.InitPort(port, 9600, 'N', 8, 1, EV_RXCHAR))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("initPort fail !"));
-		// PortOpen();
+		PortOpen();
 	}
 	else
 	{
@@ -56,6 +56,8 @@ void UArduinoInput::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 void UArduinoInput::AnalyzeInput() {
 	char temp;
 	FString instruction = "";
+	// TODO should allow other values within each combination
+	// Might be implemented by using a buffer
 	if (mySerialPort.ReturnNextCharFromQueue(temp)) {
 		if (temp == 'L') {
 			if (mySerialPort.SizeOfMessageQueue() > 1) {
@@ -98,6 +100,15 @@ void UArduinoInput::AnalyzeInput() {
 		}
 		else if (temp == 'T') {
 			// read twice, next char should be a value
+			instruction = "T";
+			mySerialPort.RemoveNextCharFromQueue();
+			while (mySerialPort.ReturnNextCharFromQueue(temp)) {
+				if (temp >= 'A' && temp <= 'Z') {
+					break;
+				}
+				instruction += temp;
+				mySerialPort.RemoveNextCharFromQueue();
+			}
 		}
 		else {
 			mySerialPort.RemoveNextCharFromQueue();

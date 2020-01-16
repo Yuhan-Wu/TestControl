@@ -136,6 +136,12 @@ void ATestControlCharacter::Tick(float DeltaTime)
 		else if (getInput == "D") {
 			UE_LOG(LogTemp, Warning, TEXT("Hands Down"));
 		}
+		else if (getInput[0] == 'T') {
+			FString left = "";
+			FString right = "";
+			getInput.Split(getInput,&left,&right);
+			int angle = FCString::Atoi(*right);
+		}
 	}
 }
 
