@@ -88,71 +88,55 @@ void ATestControlCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 
 void ATestControlCharacter::Tick(float DeltaTime)
 {
-Super::Tick(DeltaTime);
+	Super::Tick(DeltaTime);
 
-FString getInput;
-if (isRunning) {
-	running_counter++;
-	if (running_counter != TOTAL_RUNNING) {
-		ATestControlCharacter::MoveForward(1);
+	FString getInput;
+	if (isRunning) {
+		running_counter++;
+		if (running_counter != TOTAL_RUNNING) {
+			ATestControlCharacter::MoveForward(1);
+		}
+		else {
+			isRunning = false;
+		}
+		// This is for jump+run()
+		// TODO Hopefully, we'll have time to refactor this part :)
+		if (ArduinoInput->ReturnNextInputInQueue(getInput)) {
+			if (getInput == "J") {
+				ACharacter::Jump();
+			}
+		}
 	}
-	else {
-		isRunning = false;
-	}
-	// This is for jump+run()
-	// TODO Hopefully, we'll have time to refactor this part :)
-	if (ArduinoInput->ReturnNextInputInQueue(getInput)) {
+	else if (ArduinoInput->ReturnNextInputInQueue(getInput)) {
+		// TODO: change to more graceful code after the rest is done
 		if (getInput == "J") {
-			ACharacter::Jump();
+			if (holdOnToSth) {
+				//climb
+			}
+			else {
+				ACharacter::Jump();
+			}
 		}
-	}
-}
-else if (ArduinoInput->ReturnNextInputInQueue(getInput)) {
-	// TODO: change to more graceful code after the rest is done
-	if (getInput == "J") {
-		if (holdOnToSth) {
-			//climb
+		else if (getInput == "W") {
+			if (holdOnToSth) {
+				// swing
+			}
+			else {
+				isRunning = true;
+				running_counter = 0;
+			}
 		}
-		else {
-			ACharacter::Jump();
-		}
-	}
-	else if (getInput == "W") {
-		if (holdOnToSth) {
-			// swing
-		}
-		else {
-			isRunning = true;
-			running_counter = 0;
-		}
-	}
-	else if (getInput == "C" || getInput == "O") {
-		int angle = 1;
-		if (getInput == "O") {
-			angle *= -1;
-		}
-		// Read another input
-		while (!ArduinoInput->ReturnNextInputInQueue(getInput));
-		int toInt = FCString::Atoi(*getInput);
-		switch (toInt) {
-		case 1:
-			angle *= 45;
-			break;
-		case 2:
-			angle *= 90;
-			break;
-		case 3:
-			angle *= 135;
-			break;
-		default: 
-		}
-		
-	}
-	else if (getInput == "G") {
-		// Grab sth
+		else if (getInput == "C" || getInput == "O") {
 
+
+		}
+		else if (getInput == "U") {
+			UE_LOG(LogTemp, Warning, TEXT("Hands Up"));
+		}
+		else if (getInput == "D") {
+			UE_LOG(LogTemp, Warning, TEXT("Hands Down"));
+		}
 	}
-}
 }
 
 

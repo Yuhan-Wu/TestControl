@@ -88,8 +88,13 @@ void UArduinoInput::AnalyzeInput() {
 			mySerialPort.RemoveNextCharFromQueue();
 			instruction = "J";
 		}
-		else if (temp == 'G') {
-
+		else if (temp == 'U') {
+			mySerialPort.RemoveNextCharFromQueue();
+			instruction = "U";
+		}
+		else if (temp == 'D') {
+			mySerialPort.RemoveNextCharFromQueue();
+			instruction = "D";
 		}
 		else if (temp == 'T') {
 			// read twice, next char should be a value
