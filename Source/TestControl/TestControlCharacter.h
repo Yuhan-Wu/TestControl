@@ -23,6 +23,7 @@ class ATestControlCharacter : public ACharacter
 	/** Arduino input */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UArduinoInput* ArduinoInput;
+
 public:
 	ATestControlCharacter();
 
@@ -72,6 +73,20 @@ protected:
 
 	int running_counter = 0;
 	bool isRunning = false;
+
+	bool holdOnToSth = false;
+
+	UFUNCTION()
+	void BeginOverlap(UPrimitiveComponent* OverlappedComponent,
+			AActor* OtherActor,
+			UPrimitiveComponent* OtherComp,
+			int32 OtherBodyIndex,
+			bool bFromSweep,
+			const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void EndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+			UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 public:
 	/** Returns CameraBoom subobject **/

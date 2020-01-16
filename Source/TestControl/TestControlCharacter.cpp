@@ -1,6 +1,10 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
 #include "TestControlCharacter.h"
+
+#include "TestCable.h"
+#include "Bar.h"
+
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -18,7 +22,9 @@ ATestControlCharacter::ATestControlCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ATestControlCharacter::BeginOverlap);
+	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &ATestControlCharacter::EndOverlap);
+	
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
@@ -82,34 +88,34 @@ void ATestControlCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 
 void ATestControlCharacter::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+Super::Tick(DeltaTime);
 
-	FString getInput;
-	if (isRunning) {
-		running_counter++;
-		if (running_counter != TOTAL_RUNNING) {
-			ATestControlCharacter::MoveForward(1);
-		}
-		else {
-			isRunning = false;
-		}
-		// This is for jump+run()
-		// TODO Hopefully, we'll have time to refactor this part :)
-		if (ArduinoInput->ReturnNextInputInQueue(getInput)) {
-			if (getInput == "J") {
-				ACharacter::Jump();
-			}
-		}
+FString getInput;
+if (isRunning) {
+	running_counter++;
+	if (running_counter != TOTAL_RUNNING) {
+		ATestControlCharacter::MoveForward(1);
 	}
-	else if (ArduinoInput->ReturnNextInputInQueue(getInput)) {
+	else {
+		isRunning = false;
+	}
+	// This is for jump+run()
+	// TODO Hopefully, we'll have time to refactor this part :)
+	if (ArduinoInput->ReturnNextInputInQueue(getInput)) {
 		if (getInput == "J") {
 			ACharacter::Jump();
 		}
-		else if (getInput == "W") {
-			isRunning = true;
-			running_counter = 0;
-		}
 	}
+}
+else if (ArduinoInput->ReturnNextInputInQueue(getInput)) {
+	if (getInput == "J") {
+		ACharacter::Jump();
+	}
+	else if (getInput == "W") {
+		isRunning = true;
+		running_counter = 0;
+	}
+}
 }
 
 
@@ -120,12 +126,12 @@ void ATestControlCharacter::OnResetVR()
 
 void ATestControlCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
 {
-		Jump();
+	Jump();
 }
 
 void ATestControlCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
 {
-		StopJumping();
+	StopJumping();
 }
 
 void ATestControlCharacter::TurnAtRate(float Rate)
@@ -156,15 +162,41 @@ void ATestControlCharacter::MoveForward(float Value)
 
 void ATestControlCharacter::MoveRight(float Value)
 {
-	if ( (Controller != NULL) && (Value != 0.0f) )
+	if ((Controller != NULL) && (Value != 0.0f))
 	{
 		// find out which way is right
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
-	
+
 		// get right vector 
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
 }
+
+void ATestControlCharacter::BeginOverlap(UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex,
+	bool bFromSweep,
+	const FHitResult& SweepResult) {
+	
+	UE_LOG(LogTemp, Warning, TEXT("Enter"));
+	// TODO I'll change this part after the controller is done
+	// It's only for testing right now
+	if (Cast<ATestCable>(OtherActor)) {
+		GetCharacterMovement()->GravityScale = 0;
+		GetCharacterMovement()->Velocity.Z = 0;
+	}
+	else if (Cast<ABar>(OtherActor)) {
+		GetCharacterMovement()->GravityScale = 0;
+		GetCharacterMovement()->Velocity.Z = 0;
+		UE_LOG(LogTemp, Warning, TEXT("Overlap"));
+	}
+}
+
+void ATestControlCharacter::EndOverlap (UPrimitiveComponent* OverlappedComp,
+	AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex){
+}
+
