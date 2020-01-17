@@ -108,7 +108,7 @@ void ATestControlCharacter::Tick(float DeltaTime)
 		}
 	}
 	else if (ArduinoInput->ReturnNextInputInQueue(getInput)) {
-		// TODO: change to more graceful code after the rest is done
+		// TODO change to more graceful code after the rest is done
 		if (getInput == "J") {
 			if (holdOnToSth) {
 				//climb
@@ -126,10 +126,6 @@ void ATestControlCharacter::Tick(float DeltaTime)
 				running_counter = 0;
 			}
 		}
-		else if (getInput == "C" || getInput == "O") {
-
-
-		}
 		else if (getInput == "U") {
 			UE_LOG(LogTemp, Warning, TEXT("Hands Up"));
 		}
@@ -139,8 +135,9 @@ void ATestControlCharacter::Tick(float DeltaTime)
 		else if (getInput[0] == 'T') {
 			FString left = "";
 			FString right = "";
-			getInput.Split(getInput,&left,&right);
+			getInput.Split("T",&left,&right);
 			int angle = FCString::Atoi(*right);
+			APawn::AddControllerYawInput(angle);
 		}
 	}
 }
