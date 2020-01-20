@@ -24,8 +24,14 @@ class ATestControlCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UArduinoInput* ArduinoInput;
 
+
 public:
 	ATestControlCharacter();
+
+	UFUNCTION(BlueprintCallable, Category = Character)
+	virtual void HandsUp();
+	UFUNCTION(BlueprintCallable, Category = Character)
+	virtual void HandsDown();
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
@@ -34,6 +40,9 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	bool areHandsUp = true;
 
 protected:
 

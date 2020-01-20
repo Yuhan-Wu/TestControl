@@ -16,7 +16,7 @@
 //////////////////////////////////////////////////////////////////////////
 // ATestControlCharacter
 
-#define TOTAL_RUNNING 50
+#define TOTAL_RUNNING 100
 
 ATestControlCharacter::ATestControlCharacter()
 {
@@ -83,7 +83,11 @@ void ATestControlCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 	PlayerInputComponent->BindTouch(IE_Released, this, &ATestControlCharacter::TouchStopped);
 
 	// VR headset functionality
-	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ATestControlCharacter::OnResetVR);
+	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ATestControlCharacter::OnResetVR); \
+
+	PlayerInputComponent->BindAction("HandsUp", IE_Pressed, this, &ATestControlCharacter::HandsUp);
+	PlayerInputComponent->BindAction("HandsDown", IE_Released, this, &ATestControlCharacter::HandsDown);
+
 }
 
 void ATestControlCharacter::Tick(float DeltaTime)
@@ -127,9 +131,11 @@ void ATestControlCharacter::Tick(float DeltaTime)
 			}
 		}
 		else if (getInput == "U") {
+			areHandsUp = true;
 			UE_LOG(LogTemp, Warning, TEXT("Hands Up"));
 		}
 		else if (getInput == "D") {
+			areHandsUp = false;
 			UE_LOG(LogTemp, Warning, TEXT("Hands Down"));
 		}
 		else if (getInput[0] == 'T') {
@@ -222,5 +228,13 @@ void ATestControlCharacter::BeginOverlap(UPrimitiveComponent* OverlappedComponen
 
 void ATestControlCharacter::EndOverlap (UPrimitiveComponent* OverlappedComp,
 	AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex){
+}
+
+void ATestControlCharacter::HandsUp() {
+
+}
+
+void ATestControlCharacter::HandsDown() {
+
 }
 
