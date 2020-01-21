@@ -42,7 +42,7 @@ public:
 	float BaseLookUpRate;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	bool areHandsUp = true;
+	bool areHandsUp = false;
 
 protected:
 

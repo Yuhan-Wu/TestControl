@@ -33,7 +33,7 @@ void UArduinoInput::PortOpen() {
 	if (!mySerialPort.InitPort(port, 9600, 'N', 8, 1, EV_RXCHAR))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("initPort fail !"));
-		PortOpen();
+		// PortOpen();
 	}
 	else
 	{
