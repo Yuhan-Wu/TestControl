@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "ArduinoInput.h"
+#include "Pickup.h"
 #include "TestControlCharacter.generated.h"
 
 UCLASS(config=Game)
@@ -24,6 +25,9 @@ class ATestControlCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UArduinoInput* ArduinoInput;
 
+	UPROPERTY(EditAnywhere)
+	class USceneComponent* HoldingComponent;
+
 
 public:
 	ATestControlCharacter();
@@ -41,8 +45,34 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	bool areHandsUp = false;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+	class USceneComponent* FP_MuzzleLocation;
+
+	/** For picking up things */
+	UPROPERTY(EditAnywhere)
+	class APickup* CurrentItem;
+
+	bool bCanMove;
+	bool bHoldingItem;
+	bool bInspecting;
+
+	float PitchMax;
+	float PitchMin;
+
+	FVector HoldingComp;
+	FRotator LastRotation;
+
+	FVector Start;
+	FVector ForwardVector;
+	FVector End;
+
+	FHitResult Hit;
+
+	FComponentQueryParams DefaultComponentQueryParams;
+	FCollisionResponseParams DefaultResponseParam;
 
 protected:
 
@@ -78,12 +108,11 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
 
+	virtual void BeginPlay();
 	virtual void Tick(float DeltaTime) override;
 
 	int running_counter = 0;
 	bool isRunning = false;
-
-	bool holdOnToSth = false;
 
 	UFUNCTION()
 	void BeginOverlap(UPrimitiveComponent* OverlappedComponent,
@@ -96,6 +125,8 @@ protected:
 	UFUNCTION()
 	void EndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 			UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	void ToggleItemPickUp();
 
 public:
 	/** Returns CameraBoom subobject **/

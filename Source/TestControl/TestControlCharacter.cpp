@@ -53,8 +53,19 @@ ATestControlCharacter::ATestControlCharacter()
 
 	ArduinoInput = CreateDefaultSubobject<UArduinoInput>(TEXT("ArduinoInput"));
 
+	HoldingComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HoldingComponent"));
+	HoldingComponent->RelativeLocation.X = 50.0f;
+	HoldingComponent->SetupAttachment(FP_MuzzleLocation);
+
+	CurrentItem = NULL;
+	bCanMove = true;
+	bInspecting = false;
+	
+	
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -90,6 +101,13 @@ void ATestControlCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 
 }
 
+void ATestControlCharacter::BeginPlay() {
+	Super::BeginPlay();
+
+	PitchMax = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->ViewPitchMax;
+	PitchMin = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->ViewPitchMin;
+}
+
 void ATestControlCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -114,21 +132,16 @@ void ATestControlCharacter::Tick(float DeltaTime)
 	else if (ArduinoInput->ReturnNextInputInQueue(getInput)) {
 		// TODO change to more graceful code after the rest is done
 		if (getInput == "J") {
-			if (holdOnToSth) {
-				//climb
-			}
-			else {
-				ACharacter::Jump();
-			}
+			//climb
+			
+			ACharacter::Jump();
 		}
 		else if (getInput == "W") {
-			if (holdOnToSth) {
-				// swing
-			}
-			else {
-				isRunning = true;
-				running_counter = 0;
-			}
+			// swing
+			
+			isRunning = true;
+			running_counter = 0;
+			
 		}
 		else if (getInput == "U") {
 			areHandsUp = true;
@@ -145,6 +158,32 @@ void ATestControlCharacter::Tick(float DeltaTime)
 			int angle = FCString::Atoi(*right);
 			APawn::AddControllerYawInput(angle);
 		}
+	}
+
+	Start = FollowCamera->GetComponentLocation();
+	ForwardVector = FollowCamera->GetForwardVector();
+	End = ((ForwardVector * 200.f) + Start);
+
+	if (!bHoldingItem)
+	{
+		if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, DefaultComponentQueryParams, DefaultResponseParam))
+		{
+			if (Hit.GetActor()->GetClass()->IsChildOf(APickup::StaticClass()))
+			{
+				CurrentItem = Cast<APickup>(Hit.GetActor());
+			}
+		}
+		else
+		{
+			CurrentItem = NULL;
+		}
+	}
+
+	FollowCamera->SetFieldOfView(FMath::Lerp(FollowCamera->FieldOfView, 90.0f, 0.1f));
+
+	if (bHoldingItem)
+	{
+		HoldingComponent->SetRelativeLocation(FVector(-20.0f, 0.0f, 0.f));
 	}
 }
 
@@ -231,10 +270,27 @@ void ATestControlCharacter::EndOverlap (UPrimitiveComponent* OverlappedComp,
 }
 
 void ATestControlCharacter::HandsUp() {
+	if (CurrentItem)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PickUp"));
+		ToggleItemPickUp();
+	}
+}
 
+void ATestControlCharacter::ToggleItemPickUp() {
+	if (CurrentItem)
+	{
+		bHoldingItem = !bHoldingItem;
+		CurrentItem->PickUp();
+
+		if (!bHoldingItem)
+		{
+			CurrentItem = NULL;
+		}
+	}
 }
 
 void ATestControlCharacter::HandsDown() {
-
+	bHoldingItem = false;
 }
 

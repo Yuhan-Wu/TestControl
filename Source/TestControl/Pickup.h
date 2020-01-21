@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/SceneComponent.h"
+#include "Camera/CameraComponent.h"
 #include "Pickup.generated.h"
 
 UCLASS()
@@ -14,6 +18,22 @@ class TESTCONTROL_API APickup : public AActor
 public:	
 	// Sets default values for this actor's properties
 	APickup();
+
+	UPROPERTY(EditAnywhere)
+	UStaticMeshComponent* MyMesh;
+
+	UPROPERTY(EditAnywhere)
+	USceneComponent* HoldingComp;
+
+	UFUNCTION()
+	void PickUp();
+
+	bool isHolding;
+	bool bGravity;
+
+	ACharacter* MyCharacter;
+	UCameraComponent* PlayerCamera;
+	FVector ForwardVector;
 
 protected:
 	// Called when the game starts or when spawned
