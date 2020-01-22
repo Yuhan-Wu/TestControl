@@ -116,7 +116,7 @@ void ATestControlCharacter::Tick(float DeltaTime)
 	if (isRunning) {
 		running_counter++;
 		if (running_counter != TOTAL_RUNNING) {
-			ATestControlCharacter::MoveForward(1);
+			ATestControlCharacter::MoveForward(0.07);
 		}
 		else {
 			isRunning = false;
@@ -144,19 +144,16 @@ void ATestControlCharacter::Tick(float DeltaTime)
 			
 		}
 		else if (getInput == "U") {
-			areHandsUp = true;
-			UE_LOG(LogTemp, Warning, TEXT("Hands Up"));
+			ATestControlCharacter::HandsUp();
 		}
 		else if (getInput == "D") {
-			areHandsUp = false;
-			UE_LOG(LogTemp, Warning, TEXT("Hands Down"));
+			ATestControlCharacter::HandsDown();
 		}
-		else if (getInput[0] == 'T') {
-			FString left = "";
-			FString right = "";
-			getInput.Split("T",&left,&right);
-			int angle = FCString::Atoi(*right);
-			APawn::AddControllerYawInput(angle);
+		else if (getInput == "1") {
+			APawn::AddControllerYawInput(-10);
+		}
+		else if (getInput == "2") {
+			APawn::AddControllerYawInput(10);
 		}
 	}
 

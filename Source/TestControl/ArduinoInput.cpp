@@ -33,7 +33,7 @@ void UArduinoInput::PortOpen() {
 	if (!mySerialPort.InitPort(port, 9600, 'N', 8, 1, EV_RXCHAR))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("initPort fail !"));
-		// PortOpen();
+		PortOpen();
 	}
 	else
 	{
@@ -98,17 +98,14 @@ void UArduinoInput::AnalyzeInput() {
 			mySerialPort.RemoveNextCharFromQueue();
 			instruction = "D";
 		}
-		else if (temp == 'T') {
+		else if (temp == '1') {
 			// read twice, next char should be a value
-			instruction = "T";
+			instruction = "1";
 			mySerialPort.RemoveNextCharFromQueue();
-			while (mySerialPort.ReturnNextCharFromQueue(temp)) {
-				if (temp >= 'A' && temp <= 'Z') {
-					break;
-				}
-				instruction += temp;
-				mySerialPort.RemoveNextCharFromQueue();
-			}
+		}
+		else if (temp == '2') {
+			instruction = "2";
+			mySerialPort.RemoveNextCharFromQueue();
 		}
 		else {
 			mySerialPort.RemoveNextCharFromQueue();
