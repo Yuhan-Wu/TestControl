@@ -183,7 +183,7 @@ void ATestControlCharacter::Tick(float DeltaTime)
 
 	if (bHoldingItem)
 	{
-		HoldingComponent->SetRelativeLocation(FVector(-20.0f, 0.0f, 0.f));
+		HoldingComponent->SetRelativeLocation(FVector(13.0f, 0.0f, 5.f));
 	}
 }
 
@@ -270,6 +270,7 @@ void ATestControlCharacter::EndOverlap (UPrimitiveComponent* OverlappedComp,
 }
 
 void ATestControlCharacter::HandsUp() {
+	areHandsUp = true;
 	if (CurrentItem)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PickUp"));
@@ -291,6 +292,7 @@ void ATestControlCharacter::ToggleItemPickUp() {
 }
 
 void ATestControlCharacter::HandsDown() {
+	areHandsUp = false;
 	bHoldingItem = false;
 }
 
