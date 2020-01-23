@@ -4,11 +4,11 @@
 
 #include "TestCable.h"
 #include "Bar.h"
-
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "CableComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -17,6 +17,7 @@
 // ATestControlCharacter
 
 #define TOTAL_RUNNING 100
+#define Max_SWING 1100
 
 ATestControlCharacter::ATestControlCharacter()
 {
@@ -75,8 +76,8 @@ void ATestControlCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ATestControlCharacter::JumpAction);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ATestControlCharacter::StopJumpingAction);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATestControlCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATestControlCharacter::MoveRight);
@@ -112,11 +113,18 @@ void ATestControlCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (isGrabbing) {
+		destroy_counter++;
+		if (destroy_counter > Max_SWING) {
+			TriggerDestroy();
+		}
+	}
+
 	FString getInput;
 	if (isRunning) {
 		running_counter++;
 		if (running_counter != TOTAL_RUNNING) {
-			ATestControlCharacter::MoveForward(0.07);
+			ATestControlCharacter::MoveForward(scale);
 		}
 		else {
 			isRunning = false;
@@ -125,6 +133,10 @@ void ATestControlCharacter::Tick(float DeltaTime)
 		// TODO Hopefully, we'll have time to refactor this part :)
 		if (ArduinoInput->ReturnNextInputInQueue(getInput)) {
 			if (getInput == "J") {
+				if (areHandsUp && ReadyToGrab) {
+					StartGrabbing = true;
+				}
+				
 				ACharacter::Jump();
 			}
 		}
@@ -133,15 +145,15 @@ void ATestControlCharacter::Tick(float DeltaTime)
 		// TODO change to more graceful code after the rest is done
 		if (getInput == "J") {
 			//climb
-			
+			if (areHandsUp&&ReadyToGrab) {
+				StartGrabbing = true;
+			}
 			ACharacter::Jump();
 		}
 		else if (getInput == "W") {
-			// swing
 			
 			isRunning = true;
 			running_counter = 0;
-			
 		}
 		else if (getInput == "U") {
 			ATestControlCharacter::HandsUp();
@@ -152,7 +164,7 @@ void ATestControlCharacter::Tick(float DeltaTime)
 		else if (getInput == "1") {
 			APawn::AddControllerYawInput(-10);
 		}
-		else if (getInput == "2") {
+		else if (getInput == "2") { 
 			APawn::AddControllerYawInput(10);
 		}
 	}
@@ -214,6 +226,17 @@ void ATestControlCharacter::LookUpAtRate(float Rate)
 
 void ATestControlCharacter::MoveForward(float Value)
 {
+	if (isGrabbing && Rope) {
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get forward vector
+		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		FVector force = 1000 * Direction;
+		Rope->CableComponent->CableForce = force;
+		
+		return;
+	}
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
 		// find out which way is forward
@@ -248,9 +271,9 @@ void ATestControlCharacter::BeginOverlap(UPrimitiveComponent* OverlappedComponen
 	bool bFromSweep,
 	const FHitResult& SweepResult) {
 	
-	UE_LOG(LogTemp, Warning, TEXT("Enter"));
 	// TODO I'll change this part after the controller is done
 	// It's only for testing right now
+	/*
 	if (Cast<ATestCable>(OtherActor)) {
 		GetCharacterMovement()->GravityScale = 0;
 		GetCharacterMovement()->Velocity.Z = 0;
@@ -259,7 +282,7 @@ void ATestControlCharacter::BeginOverlap(UPrimitiveComponent* OverlappedComponen
 		GetCharacterMovement()->GravityScale = 0;
 		GetCharacterMovement()->Velocity.Z = 0;
 		UE_LOG(LogTemp, Warning, TEXT("Overlap"));
-	}
+	}*/
 }
 
 void ATestControlCharacter::EndOverlap (UPrimitiveComponent* OverlappedComp,
@@ -293,3 +316,28 @@ void ATestControlCharacter::HandsDown() {
 	bHoldingItem = false;
 }
 
+void ATestControlCharacter::JumpAction() {
+	if (areHandsUp && ReadyToGrab) {
+		StartGrabbing = true;
+	}
+	ACharacter::Jump();
+}
+
+void ATestControlCharacter::StopJumpingAction() {
+	ACharacter::StopJumping();
+}
+
+void ATestControlCharacter::TriggerDestroy() {
+	UE_LOG(LogTemp, Warning, TEXT("TRIGGERED"));
+	FDetachmentTransformRules rules(EDetachmentRule::KeepRelative,EDetachmentRule::KeepRelative,
+		EDetachmentRule::KeepRelative,true);
+	this->DetachFromActor(rules);
+	FVector location(885, 230, 500);
+	FVector rotation(0, 0, 0);
+	this->SetActorRelativeLocation(location);
+	this->SetActorRelativeRotation(rotation.Rotation());
+	Rope->Destroy();
+	isGrabbing = false;
+	StartGrabbing = false;
+	Rope = nullptr;
+}

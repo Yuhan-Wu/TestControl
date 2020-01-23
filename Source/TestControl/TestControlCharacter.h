@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Engine/EngineTypes.h"
 #include "ArduinoInput.h"
 #include "Pickup.h"
+#include "CableActor.h"
 #include "TestControlCharacter.generated.h"
 
 UCLASS(config=Game)
@@ -37,6 +39,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Character)
 	virtual void HandsDown();
 
+	UFUNCTION(BlueprintCallable, Category = Character)
+	virtual void JumpAction();
+	UFUNCTION(BlueprintCallable, Category = Character)
+	virtual void StopJumpingAction();
+
+	UFUNCTION()
+	void TriggerDestroy();
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -47,6 +57,21 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	bool areHandsUp = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool ReadyToGrab = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool StartGrabbing = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool isGrabbing = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	ACableActor* Rope = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float scale = 0.07;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	class USceneComponent* FP_MuzzleLocation;
@@ -103,6 +128,10 @@ protected:
 	/** Handler for when a touch input stops. */
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 
+	FTimerHandle TriggerOfRopeDestroy;
+
+	int destroy_counter = 0;
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -134,4 +163,3 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 };
-
